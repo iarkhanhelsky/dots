@@ -1,0 +1,136 @@
+# Path to your oh-my-zsh installation.
+export ZSH=/home/dm/.oh-my-zsh
+
+# Set name of the theme to load.
+# Look in ~/.oh-my-zsh/themes/
+# Optionally, if you set this to "random", it'll load a random theme each
+# time that oh-my-zsh is loaded.
+ZSH_THEME="dm-theme"
+
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to disable bi-weekly auto-update checks.
+# DISABLE_AUTO_UPDATE="true"
+
+# Uncomment the following line to change how often to auto-update (in days).
+# export UPDATE_ZSH_DAYS=13
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+# COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# The optional three formats: "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+export ZSH_CUSTOM=~/.zsh.custom.d
+
+# Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
+# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(mercurial-prompt)
+
+# User configuration
+local path_entries=( \
+    $HOME/.gem/ruby/2.5.0/bin/ \
+    $HOME/.jenv/bin \
+    $HOME/bin \
+    $HOME/.local/bin \
+    $HOME/dist/android/platform-tools \
+    $HOME/dist/android-ndk-r10e \
+)
+export PATH="$PATH:${(j.:.)path_entries}"
+source $ZSH/oh-my-zsh.sh
+
+# You may need to manually set your language environment
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+# if [[ -n $SSH_CONNECTION ]]; then
+#   export EDITOR='vim'
+# else
+#   export EDITOR='mvim'
+# fi
+export EDITOR='subl -w'
+
+# Compilation flags
+# export ARCHFLAGS="-arch x86_64"
+
+# ssh
+# export SSH_KEY_PATH="~/.ssh/dsa_id"
+
+
+# Set personal aliases, overriding those provided by oh-my-zsh libs,
+# plugins, and themes. Aliases can be placed here, though oh-my-zsh
+# users are encouraged to define aliases within the ZSH_CUSTOM folder.
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+PROJECTS_WORK="$HOME/Projects/vizor"
+PROJECTS_GITHUB="$HOME/Projects/github"
+ZF="${PROJECTS_WORK}/zombiefarm-mobile/zombiefarm-mobile"
+MOBILE_TOOLS="${PROJECTS_WORK}/mobile-dev-tools"
+
+function smart_cd() {
+  local d=$1
+
+  if [ ! -z "$2" ]; then
+    d="${d}/$2"
+  fi
+
+  print -P "%B%F{green}>>>%f%b cd ${d}"
+  cd "${d}"
+}
+
+# cd shortcuts. c*
+function czf() { smart_cd $ZF $1 ; }
+function cmt() { smart_cd $MOBILE_TOOLS $1; }
+function cpw() { smart_cd $PROJECTS_WORK $1; }
+function cme() { smart_cd "$PROJECTS_WORK/mobile-fw-examples/mobile-fw-examples" $1; }
+function cm3() { smart_cd "$PROJECTS_GITHUB/vizor-games/grably" $1; }
+function cfg() { smart_cd "$PROJECTS_GITHUB/iarkhanhelsky/dots" $1; }
+function cgh() { smart_cd $PROJECTS_GITHUB $1; }
+
+# aliases
+alias ccat='pygmentize'
+alias ls='ls -lh --group-directories-first --color=always'
+alias lsa='ls -a'
+
+POWERLINE_CUSTOM_CURRENT_PATH="%2~"
+POWERLINE_SHORT_HOST_NAME="true"
+POWERLINE_RIGHT_B="none"
+
+SHELL=/usr/local/bin/zsh
+eval "$(jenv init -)"
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
+source $HOME/.rvm/scripts/rvm
+
+export ANDROID_HOME=$HOME/dist/android
+export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
+export ANDROID_NDK_HOME=$ANDROID_NDK
+
+export GDK_SCALE=2
+export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'

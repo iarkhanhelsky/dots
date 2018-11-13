@@ -1,0 +1,1 @@
+/home/dm/Projects/github/iarkhanhelsky/dots/rc/nanorc.d
