@@ -18,6 +18,9 @@ DOTS = %w(rc/nanorc
           rc/nanorc.d
           ).freeze
 
+# Folders from ~/.config
+CONFIG = %w(rc/config/rofi)
+
 # List of third party ZSH plugins
 ZSH_PLUGINS = {
   'oh-my-zsh-hg-prompt/mercurial-prompt' => 'mercurial-prompt'
@@ -28,11 +31,19 @@ puts "Your home @ #{HOME}"
 
 task :default => :link
 
-task :link => %i(link_rc link_zsh_plugins)
+task :link => %i(link_rc link_config link_zsh_plugins)
 
 task :link_rc do
   DOTS.each do |file|
     dst = File.join(HOME, '.' + File.basename(file))
+    src = File.expand_path(file)
+    ln_s(src, dst, force: true)
+  end
+end
+
+task :link_config do
+  CONFIG.each do |file|
+    dst = File.join(HOME, '.config', File.basename(file))
     src = File.expand_path(file)
     ln_s(src, dst, force: true)
   end

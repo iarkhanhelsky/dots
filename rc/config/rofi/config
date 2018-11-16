@@ -1,0 +1,4 @@
+rofi.combi-modi:    window,drun
+rofi.font:          Roboto 22
+rofi.modi:          combi
+
