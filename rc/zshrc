@@ -1,5 +1,5 @@
 # Path to your oh-my-zsh installation.
-export ZSH=/home/dm/.oh-my-zsh
+export ZSH=$HOME/.oh-my-zsh
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -49,14 +49,20 @@ plugins=(mercurial-prompt)
 
 # User configuration
 local path_entries=( \
+    /usr/local/opt/coreutils/libexec/gnubin \
     $HOME/.gem/ruby/2.5.0/bin/ \
     $HOME/.jenv/bin \
     $HOME/bin \
     $HOME/.local/bin \
-    $HOME/dist/android/platform-tools \
+    $HOME/dist/android-sdk/platform-tools \
     $HOME/dist/android-ndk-r10e \
+    $HOME/Projects/github/iarkhanhelsky/toolbox/bin \
+    $HOME/Projects/work/mbuild2/bin \
+    $HOME/.yarn/bin \
+    $(go env GOPATH)/bin
 )
-export PATH="$PATH:${(j.:.)path_entries}"
+
+export PATH="${(j.:.)path_entries}:$PATH"
 source $ZSH/oh-my-zsh.sh
 
 # You may need to manually set your language environment
@@ -86,30 +92,6 @@ export EDITOR='subl -w'
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-PROJECTS_WORK="$HOME/Projects/vizor"
-PROJECTS_GITHUB="$HOME/Projects/github"
-ZF="${PROJECTS_WORK}/zombiefarm-mobile/zombiefarm-mobile"
-MOBILE_TOOLS="${PROJECTS_WORK}/mobile-dev-tools"
-
-function smart_cd() {
-  local d=$1
-
-  if [ ! -z "$2" ]; then
-    d="${d}/$2"
-  fi
-
-  print -P "%B%F{green}>>>%f%b cd ${d}"
-  cd "${d}"
-}
-
-# cd shortcuts. c*
-function czf() { smart_cd $ZF $1 ; }
-function cmt() { smart_cd $MOBILE_TOOLS $1; }
-function cpw() { smart_cd $PROJECTS_WORK $1; }
-function cme() { smart_cd "$PROJECTS_WORK/mobile-fw-examples/mobile-fw-examples" $1; }
-function cm3() { smart_cd "$PROJECTS_GITHUB/vizor-games/grably" $1; }
-function cfg() { smart_cd "$PROJECTS_GITHUB/iarkhanhelsky/dots" $1; }
-function cgh() { smart_cd $PROJECTS_GITHUB $1; }
 
 # aliases
 alias ccat='pygmentize'
@@ -126,11 +108,20 @@ eval "$(jenv init -)"
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
 
+PATH="$HOME/.node/bin:$PATH"
+NODE_PATH="$HOME/.node/lib/node_modules:$NODE_PATH"
+
 source $HOME/.rvm/scripts/rvm
 
 export ANDROID_HOME=$HOME/dist/android
 export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
 export ANDROID_NDK_HOME=$ANDROID_NDK
 
-export GDK_SCALE=2
-export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
+# export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
+eval "$(jump shell)"
+
+
+export GOPATH=$HOME/Projects/go
+export MESA_GLSL_CACHE_DISABLE=true
+
+alias inflate='ruby -r zlib -e "puts Zlib::Inflate.inflate(STDIN.read)"'
