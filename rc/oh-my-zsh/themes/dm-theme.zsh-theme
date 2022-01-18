@@ -21,8 +21,19 @@ local git_branch='$(git_prompt_info)%{$reset_color%}'
 local hg_branch='$(hg_prompt_info)'
 local vcs_info="${git_branch}${hg_branch}"
 
+kubectl_prompt_info () {
+    local kube_ctx
+    kube_ctx="$(kubectl config current-context 2>/dev/null)"
+    if [[ "${kube_ctx}" != "" ]]
+    then
+        echo "k8s:(%{$fg[magenta]%}${kube_ctx}%{$reset_color%}) "
+    fi
+}
 
-PROMPT="╭─${user_host} ${current_dir} ${rvm_ruby} ${vcs_info}
+local k8s_info="$(kubectl_prompt_info)"
+
+
+PROMPT="╭─${user_host} ${current_dir} ${rvm_ruby}${vcs_info}${k8s_info}
 ╰─%B${user_symbol}%b "
 RPS1="%B${return_code}%b"
 
@@ -31,5 +42,5 @@ ZSH_THEME_GIT_PROMPT_SUFFIX="› %{$reset_color%}"
 
 ZSH_THEME_GIT_PROMPT_PREFIX="git:(%{$fg[red]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[blue]%}) %{$fg[yellow]%}✗%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg[blue]%})"
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$reset_color%}) %{$fg[yellow]%}✗%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_CLEAN="%{$reset_color%}) "

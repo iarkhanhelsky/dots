@@ -98,12 +98,9 @@ alias ccat='pygmentize'
 alias ls='ls -lh --group-directories-first --color=always'
 alias lsa='ls -a'
 
-POWERLINE_CUSTOM_CURRENT_PATH="%2~"
-POWERLINE_SHORT_HOST_NAME="true"
-POWERLINE_RIGHT_B="none"
-
-SHELL=/usr/local/bin/zsh
-eval "$(jenv init -)"
+if command jenv 2>/dev/null ; then
+    eval "$(jenv init -)"
+fi
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
@@ -111,13 +108,14 @@ export PATH="$PATH:$HOME/.rvm/bin"
 PATH="$HOME/.node/bin:$PATH"
 NODE_PATH="$HOME/.node/lib/node_modules:$NODE_PATH"
 
-source $HOME/.rvm/scripts/rvm
+if [ -f $HOME/.rvm ]; then
+    source $HOME/.rvm/scripts/rvm
+fi
 
 export ANDROID_HOME=$HOME/dist/android
 export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
 export ANDROID_NDK_HOME=$ANDROID_NDK
 
-# export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
 eval "$(jump shell)"
 
 
