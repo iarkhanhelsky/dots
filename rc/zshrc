@@ -94,7 +94,12 @@ export EDITOR='subl -w'
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # aliases
-alias ccat='pygmentize'
+if command bat --version 1>/dev/null ; then
+    alias ccat='bat'
+else
+    alias ccat='cat'
+fi
+
 alias ls='ls -lh --group-directories-first --color=always'
 alias lsa='ls -a'
 
