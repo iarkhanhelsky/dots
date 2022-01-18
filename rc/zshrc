@@ -84,28 +84,6 @@ fi
 # export SSH_KEY_PATH="~/.ssh/dsa_id"
 
 
-# Set personal aliases, overriding those provided by oh-my-zsh libs,
-# plugins, and themes. Aliases can be placed here, though oh-my-zsh
-# users are encouraged to define aliases within the ZSH_CUSTOM folder.
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
-
-# aliases
-if command bat --version 1>/dev/null ; then
-    alias ccat='bat'
-else
-    alias ccat='cat'
-fi
-
-alias ls='ls -lh --group-directories-first --color=always'
-alias lsa='ls -a'
-
-if command jenv 2>/dev/null ; then
-    eval "$(jenv init -)"
-fi
 
 PATH="$HOME/.node/bin:$PATH"
 NODE_PATH="$HOME/.node/lib/node_modules:$NODE_PATH"
@@ -116,8 +94,8 @@ export ANDROID_NDK_HOME=$ANDROID_NDK
 
 eval "$(jump shell)"
 
-
 export GOPATH=$HOME/Projects/go
 export MESA_GLSL_CACHE_DISABLE=true
 
-alias inflate='ruby -r zlib -e "puts Zlib::Inflate.inflate(STDIN.read)"'
+
+for f in $HOME/.zshrc.d/* ; do source "$f"; done
