@@ -26,7 +26,7 @@ kubectl_prompt_info () {
     kube_ctx="$(kubectl config current-context 2>/dev/null)"
     if [[ "${kube_ctx}" != "" ]]
     then
-        echo "k8s:(%{$fg[magenta]%}${kube_ctx}%{$reset_color%}) "
+        echo "%{$fg_bold[blue]%}k8s:(%{$fg[magenta]%}${kube_ctx}%{$fg_bold[blue]%})%{$reset_color%} "
     fi
 }
 
@@ -37,10 +37,7 @@ PROMPT="╭─${user_host} ${current_dir} ${rvm_ruby}${vcs_info}${k8s_info}
 ╰─%B${user_symbol}%b "
 RPS1="%B${return_code}%b"
 
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[yellow]%}‹"
-ZSH_THEME_GIT_PROMPT_SUFFIX="› %{$reset_color%}"
-
-ZSH_THEME_GIT_PROMPT_PREFIX="git:(%{$fg[red]%}"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}git:(%{$fg[red]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
 ZSH_THEME_GIT_PROMPT_DIRTY="%{$reset_color%}) %{$fg[yellow]%}✗%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_CLEAN="%{$reset_color%}) "
+ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[blue]%})%{$reset_color%} "
