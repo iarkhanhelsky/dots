@@ -14,16 +14,12 @@ ZSH_PLUGINS = {
 }.freeze
 ZSH_PLUGINS_HOME = 'zsh-plugins'.freeze
 
-task :default => :link
+task :default => [:link, :configure]
 
-task :link => %i(link_rc link_zsh_plugins)
+task :link => [:link_rc, :link_zsh_plugins]
 
 task :link_rc do
-  rc_folders = ['rc']
-  rc_folders << 'rc-darwin' if /darwin/ =~ RUBY_PLATFORM
-  rc_folders << 'rc-linux' if /linux/ =~ RUBY_PLATFORM
-  rc_folders << "rc-#{ENV['HOSTNAME']}" if File.exist?("rc-#{ENV['HOSTNAME']}")
-
+  rc_folders = Dots.select_folders('rc')
   puts " :: Using #{rc_folders.size} rc folders:"
   puts "   - " + rc_folders.join("\n   - ")
 
@@ -39,5 +35,14 @@ task :link_zsh_plugins do
 end
 
 task :configure do 
-  
+  configure_folders = Dots.select_folders('configure')
+  puts " :: Using #{configure_folders.size} configure folders:"
+  puts "   - " + configure_folders.join("\n   - ")
+
+  configure_folders.each do |folder|
+    Dir["#{folder}/*.sh"].each do |sh|
+      puts "Apply #{sh}"
+      puts `#{sh}`
+    end
+  end
 end

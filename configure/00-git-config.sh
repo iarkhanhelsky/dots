@@ -1,5 +1,5 @@
 #!/bin/bash
-GIT_CONFIG="git config"
+GIT_CONFIG="git config --global"
 
 echo ":: Set git aliases"
 

@@ -1,9 +1,9 @@
 require 'fileutils'
 
 module Dots
-    include FileUtils::Verbose
-
     class << self
+      include FileUtils::Verbose
+
       def link_all(folders, home: )
         commands = folders.flat_map { |f| link(Pathname.new(f), home: home) }
         check_uniq_dst(commands)
@@ -50,6 +50,15 @@ module Dots
   
       def conflict(this, that)
         "Both #{this[:src]} and #{that[:src]} result #{this[:dst]}"
+      end
+
+      def select_folders(prefix)
+        folders = [prefix]
+        folders << "#{prefix}-darwin" if /darwin/ =~ RUBY_PLATFORM
+        folders << "#{prefix}-linux" if /linux/ =~ RUBY_PLATFORM
+        folders << "#{prefix}-#{ENV['HOSTNAME']}" if File.exist?("#{prefix}-#{ENV['HOSTNAME']}")
+
+        folders
       end
     end
   end
