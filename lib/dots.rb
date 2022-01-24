@@ -1,10 +1,13 @@
+require 'fileutils'
+
 module Dots
+    include FileUtils::Verbose
+
     class << self
       def link_all(folders, home: )
         commands = folders.flat_map { |f| link(Pathname.new(f), home: home) }
         check_uniq_dst(commands)
   
-        # commands.each { |c| puts "#{c[:dst]}: #{c[:cmd]}" }
         commands.each { |c| c[:cmd].call() }
       end
   

@@ -2,8 +2,6 @@ require 'pathname'
 
 require_relative 'lib/dots'
 
-include FileUtils::Verbose
-
 # Path to home dir
 HOME = ENV['HOME']
 puts "Your home @ #{HOME}"
@@ -27,7 +25,7 @@ task :link_rc do
   rc_folders << "rc-#{ENV['HOSTNAME']}" if File.exist?("rc-#{ENV['HOSTNAME']}")
 
   puts " :: Using #{rc_folders.size} rc folders:"
-  puts "   - " + rc_folders.join("\n - ")
+  puts "   - " + rc_folders.join("\n   - ")
 
   Dots.link_all(rc_folders, home: HOME)
 end
@@ -38,4 +36,8 @@ task :link_zsh_plugins do
   ZSH_PLUGINS.each do |src, dst|
     ln_s(File.expand_path(File.join(ZSH_PLUGINS_HOME, src)), File.join(plugins, dst), force: true)
   end
+end
+
+task :configure do 
+  
 end
