@@ -6,7 +6,3 @@ if command bat --version 1>/dev/null ; then
 else
     alias ccat='cat'
 fi
-
-if command jenv 2>/dev/null ; then
-    eval "$(jenv init -)"
-fi
