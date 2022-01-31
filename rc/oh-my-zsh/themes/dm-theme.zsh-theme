@@ -23,7 +23,7 @@ local vcs_info="${git_branch}${hg_branch}"
 
 kubectl_prompt_info () {
     local kube_ctx
-    kube_ctx="$(kubectl config current-context 2>/dev/null)"
+    kube_ctx="$(awk '/current-context:/ { print $2 }' "${KUBECONFIG:-$HOME/.kube/config}")"
     if [[ "${kube_ctx}" != "" ]]
     then
         echo "%{$fg_bold[blue]%}k8s:(%{$fg[magenta]%}${kube_ctx}%{$fg_bold[blue]%})%{$reset_color%} "
