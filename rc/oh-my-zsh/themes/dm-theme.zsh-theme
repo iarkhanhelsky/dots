@@ -30,7 +30,7 @@ kubectl_prompt_info () {
     fi
 }
 
-local k8s_info="$(kubectl_prompt_info)"
+local k8s_info='$(kubectl_prompt_info)'
 
 
 PROMPT="╭─${user_host} ${current_dir} ${rvm_ruby}${vcs_info}${k8s_info}
