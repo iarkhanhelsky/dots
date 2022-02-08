@@ -49,16 +49,10 @@ plugins=(mercurial-prompt)
 
 # User configuration
 local path_entries=( \
-    $HOME/.gem/ruby/2.5.0/bin/ \
     $HOME/.jenv/bin \
     $HOME/bin \
     $HOME/.local/bin \
-    $HOME/dist/android-sdk/platform-tools \
-    $HOME/dist/android-ndk-r10e \
-    $HOME/Projects/github/iarkhanhelsky/toolbox/bin \
-    $HOME/Projects/work/mbuild2/bin \
     $HOME/.yarn/bin \
-    $(go env GOPATH)/bin
 )
 
 export PATH="${(j.:.)path_entries}:$PATH"
