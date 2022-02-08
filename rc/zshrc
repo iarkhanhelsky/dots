@@ -76,20 +76,4 @@ else
   export EDITOR='subl -w'
 fi
 
-
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
-
-# ssh
-# export SSH_KEY_PATH="~/.ssh/dsa_id"
-
-
-
-PATH="$HOME/.node/bin:$PATH"
-NODE_PATH="$HOME/.node/lib/node_modules:$NODE_PATH"
-
-export GOPATH=$HOME/Projects/go
-export MESA_GLSL_CACHE_DISABLE=true
-
-
 for f in $HOME/.zshrc.d/* ; do source "$f"; done
