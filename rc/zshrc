@@ -88,12 +88,6 @@ fi
 PATH="$HOME/.node/bin:$PATH"
 NODE_PATH="$HOME/.node/lib/node_modules:$NODE_PATH"
 
-export ANDROID_HOME=$HOME/dist/android
-export ANDROID_NDK=$ANDROID_HOME/ndk-bundle
-export ANDROID_NDK_HOME=$ANDROID_NDK
-
-eval "$(jump shell)"
-
 export GOPATH=$HOME/Projects/go
 export MESA_GLSL_CACHE_DISABLE=true
 
