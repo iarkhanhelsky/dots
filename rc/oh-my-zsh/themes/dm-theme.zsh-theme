@@ -22,11 +22,16 @@ local hg_branch='$(hg_prompt_info)'
 local vcs_info="${git_branch}${hg_branch}"
 
 kubectl_prompt_info () {
+    local kube_cfg="${KUBECONFIG:-$HOME/.kube/config}"
     local kube_ctx
-    kube_ctx="$(awk '/current-context:/ { print $2 }' "${KUBECONFIG:-$HOME/.kube/config}")"
-    if [[ "${kube_ctx}" != "" ]]
-    then
-        echo "%{$fg_bold[blue]%}k8s:(%{$fg[magenta]%}${kube_ctx}%{$fg_bold[blue]%})%{$reset_color%} "
+    
+    if [ -f "${kube_cfg}" ]; then
+      kube_ctx="$(awk '/current-context:/ { print $2 }' "${kube_cfg}")"
+
+      if [[ "${kube_ctx}" != "" ]]
+      then
+          echo "%{$fg_bold[blue]%}k8s:(%{$fg[magenta]%}${kube_ctx}%{$fg_bold[blue]%})%{$reset_color%} "
+      fi
     fi
 }
 
