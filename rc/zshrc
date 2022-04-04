@@ -49,10 +49,11 @@ plugins=(mercurial-prompt)
 
 # User configuration
 local path_entries=( \
-    $HOME/.jenv/bin \
     $HOME/bin \
+    $HOME/.jenv/bin \
     $HOME/.local/bin \
     $HOME/.yarn/bin \
+    $HOME/.krew/bin \
 )
 
 export PATH="${(j.:.)path_entries}:$PATH"

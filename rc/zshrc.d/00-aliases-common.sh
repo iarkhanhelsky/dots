@@ -6,3 +6,5 @@ if command bat --version 1>/dev/null ; then
 else
     alias ccat='cat'
 fi
+
+alias k=kubectl
