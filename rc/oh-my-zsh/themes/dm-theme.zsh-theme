@@ -39,7 +39,7 @@ local k8s_info='$(kubectl_prompt_info)'
 
 
 PROMPT="╭─${user_host} ${current_dir} ${rvm_ruby}${vcs_info}${k8s_info}
-╰─%B${user_symbol}%b "
+╰─%B${user_symbol}%b %{$reset_color%}"
 RPS1="%B${return_code}%b"
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}git:(%{$fg[red]%}"
