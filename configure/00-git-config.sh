@@ -17,4 +17,4 @@ echo ":: Updated"
 $GIT_CONFIG --get-regexp '^alias\.'  | awk '{print "   - " $1}'
 
 # Present output in a pager only when the output is longer than one terminal screen
-git config --global core.pager "less -FX
+git config --global core.pager "less -FX"
