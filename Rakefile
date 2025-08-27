@@ -10,7 +10,6 @@ puts "Your home @ #{HOME}"
 ZSH_CUSTOM_DIR = File.join(HOME, '.zsh.custom.d')
 # List of third party ZSH plugins
 ZSH_PLUGINS = {
-  'oh-my-zsh-hg-prompt/mercurial-prompt' => 'mercurial-prompt'
 }.freeze
 ZSH_PLUGINS_HOME = 'zsh-plugins'.freeze
 
