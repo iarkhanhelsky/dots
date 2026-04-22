@@ -46,8 +46,10 @@ rake
 
 Required:
 
-- `ruby` for running `rake`
-- `zsh`
+- `git` (used by installer and updates)
+- `ruby`
+- `rake` (usually installed with Ruby)
+- `zsh` (for the shell config this repo installs)
 
 Optional but supported:
 
@@ -61,7 +63,45 @@ them when available.
 
 ## Structure
 
-`TBD`
+- `rc/`: base dotfile sources. Files here are linked into `$HOME` as hidden
+  files (for example, `rc/zshrc` -> `$HOME/.zshrc`).
+- `rc-darwin/` and `rc-linux/`: platform overlays selected automatically based
+  on your OS.
+- `configure/`: post-link scripts run by `rake configure`.
+- `lib/` + `Rakefile`: linking and setup orchestration.
+- `shims/`: shim runtime (`shims/dm-shim`), generated launchers (`shims/bin/`),
+  and tool definitions (`shims/defs/`).
+- `tmux/`: tmux assets/plugins used by the shell/tmux setup.
+- `zsh-plugins/`: bundled plugin sources.
+
+Setup flow in short:
+
+- `install.sh` checks for `git`, `ruby`, and `rake`.
+- It uses `DOTS_HOME` (default: `$HOME`) and `DOTS_DIR` (default:
+  `$DOTS_HOME/Projects/github/dots`).
+- For an existing checkout, updates run only when the repo is clean.
+- `rake` runs two phases:
+  - `link`: symlink selected `rc*` files into `$HOME`.
+  - `configure`: execute `configure*.sh` scripts for your platform/host.
+
+What gets changed:
+
+- Dotfiles in `$HOME` are managed as symlinks to this repository.
+- Existing targets are replaced during linking.
+- Setup scripts from `configure*/` are executed during `rake`.
+
+## AI Config
+
+This repository can also manage personal AI config using the same bootstrap +
+linking model as the rest of the dotfiles.
+
+- Claude personal agents live in `rc/claude/agents/*.md` and are linked to
+  `~/.claude/agents/*.md`.
+- Shared skills live in `rc/claude/skills/*/SKILL.md` and are linked to
+  `~/.claude/skills/*/SKILL.md`.
+
+This keeps a single source of truth for personal skills while supporting
+Claude-only personal agents.
 
 ## Shims
 
