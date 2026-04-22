@@ -1,0 +1,287 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFS_DIR="${SCRIPT_DIR}/defs"
+BIN_DIR="${SCRIPT_DIR}/bin"
+CACHE_ROOT="${HOME}/.cache/dm-dots/shims"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  dm-shim run <tool> [args...]
+  dm-shim resolve <tool>
+  dm-shim add <tool>
+
+Definitions are loaded from shims/defs/<tool>.env.
+EOF
+}
+
+require_cmd() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "Missing required command: $1" >&2
+    exit 1
+  fi
+}
+
+detect_platform() {
+  local raw_os raw_arch
+  raw_os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  raw_arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
+
+  case "${raw_os}" in
+    darwin) SHIM_OS="darwin" ;;
+    linux) SHIM_OS="linux" ;;
+    *)
+      echo "Unsupported OS: ${raw_os}" >&2
+      exit 1
+      ;;
+  esac
+
+  case "${raw_arch}" in
+    arm64|aarch64) SHIM_ARCH="arm64" ;;
+    x86_64|amd64) SHIM_ARCH="amd64" ;;
+    *)
+      echo "Unsupported architecture: ${raw_arch}" >&2
+      exit 1
+      ;;
+  esac
+
+  if [[ "${SHIM_OS}" == "darwin" && "${SHIM_ARCH}" != "arm64" ]]; then
+    echo "Only darwin/arm64 is supported in this repo." >&2
+    exit 1
+  fi
+
+  if [[ "${SHIM_OS}" == "linux" && "${SHIM_ARCH}" != "amd64" ]]; then
+    echo "Only linux/amd64 is supported in this repo." >&2
+    exit 1
+  fi
+}
+
+definition_hash() {
+  local definition_path="$1"
+  shasum -a 256 "${definition_path}" | awk '{print $1}'
+}
+
+platform_var_value() {
+  local base="$1"
+  local platform_key
+  platform_key="$(printf '%s_%s' "${SHIM_OS}" "${SHIM_ARCH}" | tr '[:lower:]' '[:upper:]')"
+  local platform_var="${base}_${platform_key}"
+
+  if [[ -n "${!platform_var:-}" ]]; then
+    printf '%s\n' "${!platform_var}"
+    return
+  fi
+
+  if [[ -n "${!base:-}" ]]; then
+    printf '%s\n' "${!base}"
+    return
+  fi
+
+  printf '\n'
+}
+
+expand_url() {
+  local raw_url="$1"
+  local url
+  url="$(expand_template "${raw_url}")"
+
+  if [[ "${url}" == gh://* ]]; then
+    local tail="${url#gh://}"
+    local owner repo rest
+    owner="$(printf '%s' "${tail}" | cut -d/ -f1)"
+    repo="$(printf '%s' "${tail}" | cut -d/ -f2)"
+    rest="$(printf '%s' "${tail}" | cut -d/ -f3-)"
+
+    if [[ -z "${owner}" || -z "${repo}" || -z "${rest}" ]]; then
+      echo "Invalid gh:// URL: ${raw_url}" >&2
+      exit 1
+    fi
+
+    printf 'https://github.com/%s/%s/releases/download/%s\n' "${owner}" "${repo}" "${rest}"
+    return
+  fi
+
+  printf '%s\n' "${url}"
+}
+
+expand_template() {
+  local raw="$1"
+  local out="${raw//\{os\}/${SHIM_OS}}"
+  out="${out//\{arch\}/${SHIM_ARCH}}"
+  out="${out//\{version\}/${RESOLVED_TOOL_VERSION}}"
+  printf '%s\n' "${out}"
+}
+
+download_tool() {
+  local tool="$1"
+  local resolved_url="$2"
+  local target_binary="$3"
+  local cache_dir="$4"
+
+  require_cmd curl
+  require_cmd shasum
+
+  mkdir -p "${cache_dir}"
+  local tmp_dir archive_path
+  tmp_dir="$(mktemp -d)"
+  archive_path="${tmp_dir}/payload"
+
+  trap 'rm -rf "'"${tmp_dir}"'"' RETURN
+
+  echo "Downloading ${tool} from ${resolved_url}" >&2
+  curl -fL --retry 3 --retry-delay 1 "${resolved_url}" -o "${archive_path}"
+
+  local file_name
+  file_name="$(basename "${resolved_url}")"
+  local mode="${RESOLVED_TOOL_MODE:-auto}"
+  if [[ "${mode}" == "auto" ]]; then
+    case "${file_name}" in
+      *.tar.gz|*.tgz) mode="tar.gz" ;;
+      *.zip) mode="zip" ;;
+      *) mode="binary" ;;
+    esac
+  fi
+
+  case "${mode}" in
+    binary)
+      mv "${archive_path}" "${target_binary}"
+      ;;
+    tar.gz)
+      require_cmd tar
+      if [[ -z "${RESOLVED_TOOL_FILE:-}" ]]; then
+        echo "TOOL_FILE is required for tar.gz archives." >&2
+        exit 1
+      fi
+      local file_path
+      file_path="$(expand_template "${RESOLVED_TOOL_FILE}")"
+      tar -xzf "${archive_path}" -C "${tmp_dir}"
+      if [[ ! -f "${tmp_dir}/${file_path}" ]]; then
+        echo "TOOL_FILE not found in tar.gz: ${file_path}" >&2
+        exit 1
+      fi
+      mv "${tmp_dir}/${file_path}" "${target_binary}"
+      ;;
+    zip)
+      require_cmd unzip
+      if [[ -z "${RESOLVED_TOOL_FILE:-}" ]]; then
+        echo "TOOL_FILE is required for zip archives." >&2
+        exit 1
+      fi
+      unzip -p "${archive_path}" "$(expand_template "${RESOLVED_TOOL_FILE}")" > "${target_binary}"
+      ;;
+    *)
+      echo "Unsupported TOOL_MODE: ${mode}" >&2
+      exit 1
+      ;;
+  esac
+
+  chmod +x "${target_binary}"
+  trap - RETURN
+  rm -rf "${tmp_dir}"
+}
+
+resolve_binary() {
+  local tool="$1"
+  local definition_path="${DEFS_DIR}/${tool}.env"
+  if [[ ! -f "${definition_path}" ]]; then
+    echo "Definition not found: ${definition_path}" >&2
+    exit 1
+  fi
+
+  detect_platform
+
+  # shellcheck disable=SC1090
+  source "${definition_path}"
+  RESOLVED_TOOL_VERSION="$(platform_var_value "TOOL_VERSION")"
+  RESOLVED_TOOL_URL="$(platform_var_value "TOOL_URL")"
+  RESOLVED_TOOL_MODE="$(platform_var_value "TOOL_MODE")"
+  RESOLVED_TOOL_FILE="$(platform_var_value "TOOL_FILE")"
+
+  if [[ -z "${RESOLVED_TOOL_VERSION}" || -z "${RESOLVED_TOOL_URL}" ]]; then
+    echo "Definition ${definition_path} must define TOOL_VERSION and TOOL_URL." >&2
+    exit 1
+  fi
+
+  local def_hash resolved_url cache_dir target_binary
+  def_hash="$(definition_hash "${definition_path}")"
+  resolved_url="$(expand_url "${RESOLVED_TOOL_URL}")"
+
+  cache_dir="${CACHE_ROOT}/${tool}/${SHIM_OS}-${SHIM_ARCH}/${def_hash}"
+  target_binary="${cache_dir}/${tool}"
+
+  if [[ ! -x "${target_binary}" ]]; then
+    download_tool "${tool}" "${resolved_url}" "${target_binary}" "${cache_dir}"
+  fi
+
+  printf '%s\n' "${target_binary}"
+}
+
+shim_add() {
+  local tool="$1"
+  local definition_path="${DEFS_DIR}/${tool}.env"
+  local shim_path="${BIN_DIR}/${tool}"
+
+  if [[ -f "${shim_path}" ]]; then
+    echo "Shim already exists: ${shim_path}" >&2
+    exit 1
+  fi
+
+  if [[ ! -f "${definition_path}" ]]; then
+    cat > "${definition_path}" <<'EOF'
+# Required:
+# TOOL_VERSION="vX.Y.Z"
+# TOOL_URL="gh://owner/repo/{version}/asset-{os}-{arch}.tar.gz"
+# TOOL_FILE="path/inside/archive/to/binary"
+EOF
+    echo "Created placeholder definition: ${definition_path}" >&2
+  fi
+
+  cat > "${shim_path}" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+exec "\${SCRIPT_DIR}/../dm-shim" run "${tool}" "\$@"
+EOF
+
+  chmod +x "${shim_path}"
+  echo "Created shim: ${shim_path}" >&2
+}
+
+main() {
+  local command="${1:-}"
+  case "${command}" in
+    run)
+      if [[ $# -lt 2 ]]; then
+        usage >&2
+        exit 1
+      fi
+      local tool="$2"
+      shift 2
+      exec "$(resolve_binary "${tool}")" "$@"
+      ;;
+    resolve)
+      if [[ $# -ne 2 ]]; then
+        usage >&2
+        exit 1
+      fi
+      resolve_binary "$2"
+      ;;
+    add)
+      if [[ $# -ne 2 ]]; then
+        usage >&2
+        exit 1
+      fi
+      mkdir -p "${BIN_DIR}" "${DEFS_DIR}"
+      shim_add "$2"
+      ;;
+    *)
+      usage >&2
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"
