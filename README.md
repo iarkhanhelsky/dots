@@ -7,11 +7,38 @@ portable across different machines (work/home) and development environments
 
 ## Install
 
-If Ruby is installed locally, setup is straightforward:
+One-liner bootstrap:
 
 ```sh
-git clone git@github.com:iarkhanhelsky/dots.git --recurse-submodules
-cd dots
+curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
+```
+
+By default, the installer uses `~/Projects/github/dots`.
+You can override that path:
+
+```sh
+DOTS_DIR="$HOME/some/other/path/dots" curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
+```
+
+For testing in an isolated home directory, you can override home as well:
+
+```sh
+DOTS_HOME="/tmp/dots-test-home" curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
+```
+
+`DOTS_HOME` changes where `rake` writes dotfiles, and `DOTS_DIR` defaults to
+`$DOTS_HOME/Projects/github/dots`.
+
+Installer behavior:
+- If the repo is missing, it clones with submodules and runs `rake`.
+- If the repo exists and is clean, it fast-forwards + updates submodules, then runs `rake`.
+- If local changes are present, it exits without overwriting them.
+
+Manual setup (fallback):
+
+```sh
+git clone git@github.com:iarkhanhelsky/dots.git --recurse-submodules ~/Projects/github/dots
+cd ~/Projects/github/dots
 rake
 ```
 
