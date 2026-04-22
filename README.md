@@ -1,37 +1,36 @@
 # DOTS (...)
 
-Opinionated set of shell scripts to make local environment feel like home.
-This setup intended to work on both Linux and MacOS systems, and be portable
-enough to use on different machines (work/home) and different dev environments
-(go/java/ruby/...)
+Opinionated shell scripts and config to make a local environment feel like home.
+This setup is intended to work on both Linux and macOS systems and stay
+portable across different machines (work/home) and development environments
+(Go/Java/Ruby/...).
 
 ## Install
 
-Having ruby installed locally it's pretty straightforward to setup:
+If Ruby is installed locally, setup is straightforward:
 
+```sh
+git clone git@github.com:iarkhanhelsky/dots.git --recurse-submodules
+cd dots
+rake
 ```
-$ git clone git@github.com:iarkhanhelsky/dots.git --recurse-submodules
-$ cd dots
-$ rake 
-```
 
-## Perequesities
+## Prerequisites
 
-This packages MUST present:
+Required:
 
-* ruby
-* zsh
-* ???
+- `ruby` for running `rake`
+- `zsh`
 
-This packages MAY present^[1]:
+Optional but supported:
 
-* jenv
-* jump
-* direnv
-* rbenv
-* bat
+- `jenv`
+- `jump`
+- `direnv`
+- `bat`
 
-[1] means we'll try to make best use of them. It's also todo list to setup
+If these tools are installed, the shell config and shims will make use of
+them when available.
 
 ## Structure
 
@@ -39,8 +38,8 @@ This packages MAY present^[1]:
 
 ## Shims
 
-This repo includes a lightweight shim runtime for tools that should be downloaded
-on demand and cached outside the repo.
+This repo includes a lightweight shim runtime for tools that should be
+downloaded on demand and cached outside the repo.
 
 - Supported platforms: `darwin/arm64` and `linux/amd64`
 - Cache location: `~/.cache/dm-dots/shims/...`
@@ -49,21 +48,21 @@ on demand and cached outside the repo.
 
 ### Add a new shim
 
-1. Scaffold shim + definition:
+1. Scaffold a shim and definition:
 
-```
+```sh
 ./shims/dm-shim add <tool-name>
 ```
 
 2. Edit `shims/defs/<tool-name>.env`:
 
-```
+```sh
 TOOL_VERSION="v0.0.0"
 TOOL_URL="gh://owner/repo/{version}/asset-{os}-{arch}.tar.gz"
 TOOL_FILE="path/inside/archive/to/binary"
 ```
 
-`gh://` expands to:
+`gh://` expands to
 `https://github.com/<owner>/<repo>/releases/download/...`
 
 Placeholders supported in `TOOL_URL`:
@@ -72,16 +71,16 @@ Placeholders supported in `TOOL_URL`:
 - `{arch}` (`arm64` / `amd64`)
 
 Optional fields:
-- `TOOL_MODE` (`auto` (default), `binary`, `tar.gz`, `zip`)
+- `TOOL_MODE` (`auto` by default; supported values: `binary`, `tar.gz`, `zip`)
 - `TOOL_FILE` (required for `tar.gz` and `zip`)
 - Per-platform overrides are supported with suffixes, for example:
   `TOOL_URL_DARWIN_ARM64`, `TOOL_URL_LINUX_AMD64`,
   `TOOL_FILE_DARWIN_ARM64`, `TOOL_MODE_LINUX_AMD64`
 
-3. Commit generated shim launcher at `shims/bin/<tool-name>` and the definition
-   file.
+3. Commit the generated shim launcher at `shims/bin/<tool-name>` and the
+   definition file.
 
 ### Use a shim
 
-After reloading shell config, just run `<tool-name>`.
-The shim downloads once, then executes from cache.
+After reloading your shell config, run `<tool-name>`.
+The first run downloads the tool into cache; later runs execute it from there.
