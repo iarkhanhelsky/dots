@@ -103,6 +103,24 @@ linking model as the rest of the dotfiles.
 This keeps a single source of truth for personal skills while supporting
 Claude-only personal agents.
 
+Current personal skill pack:
+
+- Auto-invoked lightweight skills:
+  - `backend-api-design-review`
+  - `go-service-delivery`
+- Manual-only heavy skills (`disable-model-invocation: true`):
+  - `go-performance-lab`
+  - `rails-query-performance`
+  - `classical-ml-baseline`
+  - `ml-evaluation-and-error-analysis`
+  - `summarize-commit`
+
+Context control policy:
+
+- Keep auto skills short and broadly safe.
+- Keep heavy workflows manual-only to avoid context pollution.
+- Add `When to Use` and `When Not to Use` sections to each skill.
+
 ## Shims
 
 This repo includes a lightweight shim runtime for tools that should be
