@@ -1,139 +1,148 @@
 # DOTS (...)
 
-Opinionated shell scripts and config to make a local environment feel like home.
-This setup is intended to work on both Linux and macOS systems and stay
-portable across different machines (work/home) and development environments
-(Go/Java/Ruby/...).
+<p align="center"><strong>minimalist configurations</strong></p>
+<p align="center">
+  <code>.zshrc</code> • <code>.zshrc.d/*</code> • <code>.profile</code> • <code>.tmux.conf</code> • <code>.claude/*</code>
+</p>
+<p align="center">
+  <code>git</code> • <code>zsh</code> • <code>tmux</code> • <code>direnv/jump/jenv</code> • <code>shims</code>
+</p>
 
-## Install
+<p align="center">
+  <pre>
+██████╗  ██████╗ ████████╗███████╗
+██╔══██╗██╔═══██╗╚══██╔══╝██╔════╝
+██║  ██║██║   ██║   ██║   ███████╗
+██║  ██║██║   ██║   ██║   ╚════██║
+██████╔╝╚██████╔╝   ██║   ███████║
+╚═════╝  ╚═════╝    ╚═╝   ╚══════╝
+  </pre>
+</p>
 
-One-liner bootstrap:
+Personal dotfiles + bootstrap scripts for a fast, consistent shell setup across
+macOS and Linux.
+
+If you want one repo to manage shell config, platform-specific overlays, and a
+small "download-on-first-use" tool system, this is that repo.
+
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [What Happens During Install](#what-happens-during-install)
+- [Day-to-Day Usage](#day-to-day-usage)
+- [Repository Map](#repository-map)
+- [Optional AI Config](#optional-ai-config)
+- [Shims](#shims)
+
+## Quick Start
+
+Bootstrap in one command:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
 ```
 
-By default, the installer uses `~/Projects/github/dots`.
-You can override that path:
+Defaults:
+- `DOTS_HOME="$HOME"`
+- `DOTS_DIR="$DOTS_HOME/Projects/github/dots"`
+
+Common overrides:
 
 ```sh
-DOTS_DIR="$HOME/some/other/path/dots" curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
+# Use a custom checkout location
+DOTS_DIR="$HOME/some/other/path/dots" \
+  curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
+
+# Test in an isolated home directory
+DOTS_HOME="/tmp/dots-test-home" \
+  curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
 ```
 
-For testing in an isolated home directory, you can override home as well:
+Manual fallback:
 
 ```sh
-DOTS_HOME="/tmp/dots-test-home" curl -fsSL https://raw.githubusercontent.com/iarkhanhelsky/dots/main/install.sh | bash
-```
-
-`DOTS_HOME` changes where `rake` writes dotfiles, and `DOTS_DIR` defaults to
-`$DOTS_HOME/Projects/github/dots`.
-
-Installer behavior:
-- If the repo is missing, it clones with submodules and runs `rake`.
-- If the repo exists and is clean, it fast-forwards + updates submodules, then runs `rake`.
-- If local changes are present, it exits without overwriting them.
-
-Manual setup (fallback):
-
-```sh
-git clone git@github.com:iarkhanhelsky/dots.git --recurse-submodules ~/Projects/github/dots
+git clone --recurse-submodules https://github.com/iarkhanhelsky/dots.git ~/Projects/github/dots
 cd ~/Projects/github/dots
 rake
 ```
 
+After install, quick sanity check:
+- Open a new shell (`zsh`) and confirm your prompt/plugins are active.
+- Run `rake` from the repo once to verify no setup issues.
+
 ## Prerequisites
 
 Required:
-
-- `git` (used by installer and updates)
+- `git`
 - `ruby`
-- `rake` (usually installed with Ruby)
-- `zsh` (for the shell config this repo installs)
+- `rake`
+- `zsh`
 
 Optional but supported:
-
 - `jenv`
 - `jump`
 - `direnv`
 - `bat`
 
-If these tools are installed, the shell config and shims will make use of
-them when available.
+If optional tools are installed, config and shims use them automatically.
 
-## Structure
+## What Happens During Install
 
-- `rc/`: base dotfile sources. Files here are linked into `$HOME` as hidden
-  files (for example, `rc/zshrc` -> `$HOME/.zshrc`).
-- `rc-darwin/` and `rc-linux/`: platform overlays selected automatically based
-  on your OS.
-- `configure/`: post-link scripts run by `rake configure`.
-- `lib/` + `Rakefile`: linking and setup orchestration.
-- `shims/`: shim runtime (`shims/dm-shim`), generated launchers (`shims/bin/`),
-  and tool definitions (`shims/defs/`).
-- `tmux/`: tmux assets/plugins used by the shell/tmux setup.
-- `zsh-plugins/`: bundled plugin sources.
+`install.sh` does the following:
+- Verifies `git`, `ruby`, and `rake` are available.
+- Uses `DOTS_HOME`/`DOTS_DIR` (or defaults) and exports `HOME="$DOTS_HOME"`.
+- If the repo does not exist: clone with submodules, then run `rake`.
+- If the repo exists and is clean: `git pull --ff-only --recurse-submodules`,
+  update submodules, then run `rake`.
+- If local changes exist: exit without overwriting anything.
 
-Setup flow in short:
+`rake` then performs dotfiles linking + configure scripts.
 
-- `install.sh` checks for `git`, `ruby`, and `rake`.
-- It uses `DOTS_HOME` (default: `$HOME`) and `DOTS_DIR` (default:
-  `$DOTS_HOME/Projects/github/dots`).
-- For an existing checkout, updates run only when the repo is clean.
-- `rake` runs two phases:
-  - `link`: symlink selected `rc*` files into `$HOME`.
-  - `configure`: execute `configure*.sh` scripts for your platform/host.
+## Day-to-Day Usage
 
-What gets changed:
+- **Update your setup:** rerun the bootstrap command, or `cd "$DOTS_DIR" && rake`
+  after pulling changes yourself.
+- **When updates fail:** if installer reports local changes, commit/stash/discard
+  in `DOTS_DIR`, then rerun.
+- **Changing machines/environments:** reuse the same bootstrap command and set
+  `DOTS_HOME`/`DOTS_DIR` if needed.
 
-- Dotfiles in `$HOME` are managed as symlinks to this repository.
-- Existing targets are replaced during linking.
-- Setup scripts from `configure*/` are executed during `rake`.
+## Repository Map
 
-## AI Config
+- `rc/`: base dotfile sources (linked into `$HOME` as hidden files).
+- `rc-darwin/` and `rc-linux/`: OS-specific overlays.
+- `configure/`: post-link setup scripts used by `rake configure`.
+- `lib/` + `Rakefile`: orchestration for link/configure phases.
+- `shims/`: shim runtime, generated launchers, and shim definitions.
+- `tmux/`: tmux assets/plugins used by this setup.
+- `zsh-plugins/`: bundled zsh plugin sources.
 
-This repository can also manage personal AI config using the same bootstrap +
-linking model as the rest of the dotfiles.
+What this changes in practice:
+- Dotfiles in `$HOME` are managed as symlinks into this repo.
+- Existing targets can be replaced during linking.
+- Configure scripts from `configure*/` run during setup.
 
-- Claude personal agents live in `rc/claude/agents/*.md` and are linked to
-  `~/.claude/agents/*.md`.
-- Shared skills live in `rc/claude/skills/*/SKILL.md` and are linked to
-  `~/.claude/skills/*/SKILL.md`.
+## Optional AI Config
 
-This keeps a single source of truth for personal skills while supporting
-Claude-only personal agents.
+This repo can also manage personal Claude config using the same linking model.
+If you do not use it, you can safely ignore this section.
 
-Current personal skill pack:
-
-- Auto-invoked lightweight skills:
-  - `backend-api-design-review`
-  - `go-service-delivery`
-- Manual-only heavy skills (`disable-model-invocation: true`):
-  - `go-performance-lab`
-  - `rails-query-performance`
-  - `classical-ml-baseline`
-  - `ml-evaluation-and-error-analysis`
-  - `summarize-commit`
-
-Context control policy:
-
-- Keep auto skills short and broadly safe.
-- Keep heavy workflows manual-only to avoid context pollution.
-- Add `When to Use` and `When Not to Use` sections to each skill.
+- Personal agents: `rc/claude/agents/*.md` -> `~/.claude/agents/*.md`
+- Shared skills: `rc/claude/skills/*/SKILL.md` -> `~/.claude/skills/*/SKILL.md`
 
 ## Shims
 
-This repo includes a lightweight shim runtime for tools that should be
-downloaded on demand and cached outside the repo.
+Shims let you expose CLI tools that are downloaded on demand and cached outside
+this repository.
 
-- Supported platforms: `darwin/arm64` and `linux/amd64`
-- Cache location: `~/.cache/dm-dots/shims/...`
-- Cache invalidation: definition content hash (updating a definition triggers a
-  redownload automatically)
+- Supported platforms: `darwin/arm64`, `linux/amd64`
+- Cache root: `~/.cache/dm-dots/shims`
+- Cache invalidation: definition-file hash (definition changes trigger refresh)
 
-### Add a new shim
+### Add a New Shim
 
-1. Scaffold a shim and definition:
+1. Scaffold shim launcher + placeholder definition:
 
 ```sh
 ./shims/dm-shim add <tool-name>
@@ -147,25 +156,27 @@ TOOL_URL="gh://owner/repo/{version}/asset-{os}-{arch}.tar.gz"
 TOOL_FILE="path/inside/archive/to/binary"
 ```
 
-`gh://` expands to
-`https://github.com/<owner>/<repo>/releases/download/...`
+Notes:
+- `gh://...` expands to
+  `https://github.com/<owner>/<repo>/releases/download/...`
+- Supported placeholders: `{version}`, `{os}`, `{arch}`
+- Optional overrides:
+  - `TOOL_MODE` (`auto`, `binary`, `tar.gz`, `zip`)
+  - `TOOL_URL_DARWIN_ARM64`, `TOOL_URL_LINUX_AMD64`
+  - `TOOL_FILE_DARWIN_ARM64`, `TOOL_MODE_LINUX_AMD64`
 
-Placeholders supported in `TOOL_URL`:
-- `{version}`
-- `{os}` (`darwin` / `linux`)
-- `{arch}` (`arm64` / `amd64`)
+3. Commit:
+- `shims/bin/<tool-name>`
+- `shims/defs/<tool-name>.env`
 
-Optional fields:
-- `TOOL_MODE` (`auto` by default; supported values: `binary`, `tar.gz`, `zip`)
-- `TOOL_FILE` (required for `tar.gz` and `zip`)
-- Per-platform overrides are supported with suffixes, for example:
-  `TOOL_URL_DARWIN_ARM64`, `TOOL_URL_LINUX_AMD64`,
-  `TOOL_FILE_DARWIN_ARM64`, `TOOL_MODE_LINUX_AMD64`
+### Use a Shim
 
-3. Commit the generated shim launcher at `shims/bin/<tool-name>` and the
-   definition file.
+Reload shell config, then run the tool name directly.
 
-### Use a shim
+Example:
 
-After reloading your shell config, run `<tool-name>`.
-The first run downloads the tool into cache; later runs execute it from there.
+```sh
+my-tool --help
+```
+
+On first run, the shim downloads and caches the binary. Later runs use cache.
