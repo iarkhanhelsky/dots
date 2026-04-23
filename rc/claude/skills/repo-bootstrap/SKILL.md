@@ -9,16 +9,16 @@ Use this skill when the user needs to install, update, or validate this dotfiles
 
 ## What to Check
 
-- Confirm required tools exist: `git`, `ruby`, and `rake`.
+- Confirm required tools exist: `git` and `bash`.
 - Confirm `DOTS_HOME` and `DOTS_DIR` expectations.
 - Run installer or fallback flow as requested.
-- Verify `rake` completed and symlinks were created.
+- Verify `./bin/dots-setup` completed and symlinks were created.
 
 ## Standard Install Paths
 
 - Default repository path: `~/Projects/github/dots`
 - Installer script: `install.sh`
-- Main setup command inside repo: `rake`
+- Main setup command inside repo: `./bin/dots-setup`
 
 ## Commands
 
@@ -39,7 +39,7 @@ Manual fallback:
 ```sh
 git clone git@github.com:iarkhanhelsky/dots.git --recurse-submodules ~/Projects/github/dots
 cd ~/Projects/github/dots
-rake
+./bin/dots-setup
 ```
 
 ## Troubleshooting

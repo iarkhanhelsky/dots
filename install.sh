@@ -22,15 +22,14 @@ require_command() {
   fi
 }
 
-run_rake() {
-  log "==> Running rake in ${DOTS_DIR}"
-  (cd "$DOTS_DIR" && rake)
+run_setup_script() {
+  log "==> Running setup script in ${DOTS_DIR}"
+  (cd "$DOTS_DIR" && ./bin/dots-setup)
 }
 
 ensure_dependencies() {
   require_command git "Install git and retry."
-  require_command ruby "Install Ruby and retry."
-  require_command rake "Install rake (usually from Ruby) and retry."
+  require_command bash "Install bash and retry."
 }
 
 install_fresh() {
@@ -40,7 +39,7 @@ install_fresh() {
 
   log "==> Cloning ${REPO_URL} into ${DOTS_DIR}"
   git clone --recurse-submodules "$REPO_URL" "$DOTS_DIR"
-  run_rake
+  run_setup_script
 }
 
 update_existing() {
@@ -59,7 +58,7 @@ update_existing() {
     git submodule update --init --recursive
   )
 
-  run_rake
+  run_setup_script
 }
 
 main() {

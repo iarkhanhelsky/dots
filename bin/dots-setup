@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DOTS_HOME="${DOTS_HOME:-$HOME}"
+HOME="${DOTS_HOME}"
+
+log() {
+  printf '%s\n' "$*"
+}
+
+select_folders() {
+  local prefix="$1"
+  local host_name os_name
+  local folders=("$prefix")
+
+  os_name="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  case "$os_name" in
+    darwin) folders+=("${prefix}-darwin") ;;
+    linux) folders+=("${prefix}-linux") ;;
+  esac
+
+  host_name="${HOSTNAME:-}"
+  if [ -z "$host_name" ]; then
+    host_name="$(hostname 2>/dev/null || true)"
+  fi
+  if [ -n "$host_name" ] && [ -d "${REPO_ROOT}/${prefix}-${host_name}" ]; then
+    folders+=("${prefix}-${host_name}")
+  fi
+
+  printf '%s\n' "${folders[@]}"
+}
+
+sorted_entries() {
+  local dir="$1"
+  shopt -s nullglob dotglob
+  local entries=("${dir}"/*)
+  shopt -u nullglob dotglob
+  if [ "${#entries[@]}" -eq 0 ]; then
+    return 0
+  fi
+  printf '%s\n' "${entries[@]}" | sort
+}
+
+link_entry() {
+  local entry="$1"
+  local root="$2"
+  local rel_path home_path base_name
+  rel_path="${entry#${root}/}"
+  home_path="${HOME}/.${rel_path}"
+  base_name="$(basename "$entry")"
+
+  # Hidden entries under rc*/ should never be linked into $HOME.
+  if [[ "$base_name" == .* ]]; then
+    return 0
+  fi
+
+  if [ -f "$entry" ] || [ -L "$entry" ]; then
+    if [ -e "$home_path" ] || [ -L "$home_path" ]; then
+      rm -rf "$home_path"
+    fi
+    ln -s "$entry" "$home_path"
+    return 0
+  fi
+
+  if [ -d "$entry" ]; then
+    mkdir -p "$home_path"
+    while IFS= read -r child; do
+      [ -e "$child" ] || continue
+      link_entry "$child" "$root"
+    done < <(sorted_entries "$entry")
+  fi
+}
+
+link_rc() {
+  local folder rc_root
+  local -a folders
+  mapfile -t folders < <(select_folders "rc")
+  log " :: Using ${#folders[@]} rc folders:"
+  printf '   - %s\n' "${folders[@]}"
+
+  for folder in "${folders[@]}"; do
+    rc_root="${REPO_ROOT}/${folder}"
+    [ -d "$rc_root" ] || continue
+    while IFS= read -r entry; do
+      [ -e "$entry" ] || continue
+      link_entry "$entry" "$rc_root"
+    done < <(sorted_entries "$rc_root")
+  done
+}
+
+link_zsh_plugins() {
+  local plugins_dir src dst
+  plugins_dir="${HOME}/.zsh.custom.d/plugins"
+  mkdir -p "$plugins_dir"
+
+  # Keep this as an explicit mapping for future third-party plugin links.
+  local -a plugin_links=(
+    # "source_name:target_name"
+  )
+
+  for entry in "${plugin_links[@]}"; do
+    src="${entry%%:*}"
+    dst="${entry##*:}"
+    ln -snf "${REPO_ROOT}/zsh-plugins/${src}" "${plugins_dir}/${dst}"
+  done
+}
+
+configure() {
+  local folder cfg_root script
+  local -a folders scripts
+  mapfile -t folders < <(select_folders "configure")
+  log " :: Using ${#folders[@]} configure folders:"
+  printf '   - %s\n' "${folders[@]}"
+
+  for folder in "${folders[@]}"; do
+    cfg_root="${REPO_ROOT}/${folder}"
+    [ -d "$cfg_root" ] || continue
+    shopt -s nullglob
+    mapfile -t scripts < <(printf '%s\n' "${cfg_root}"/*.sh | sort)
+    shopt -u nullglob
+    for script in "${scripts[@]}"; do
+      log "Apply ${script}"
+      "$script"
+    done
+  done
+}
+
+main() {
+  log "Your home @ ${HOME}"
+  link_rc
+  link_zsh_plugins
+  configure
+}
+
+main "$@"

@@ -64,19 +64,18 @@ Manual fallback:
 ```sh
 git clone --recurse-submodules https://github.com/iarkhanhelsky/dots.git ~/Projects/github/dots
 cd ~/Projects/github/dots
-rake
+./bin/dots-setup
 ```
 
 After install, quick sanity check:
 - Open a new shell (`zsh`) and confirm your prompt/plugins are active.
-- Run `rake` from the repo once to verify no setup issues.
+- Run `./bin/dots-setup` from the repo once to verify no setup issues.
 
 ## Prerequisites
 
 Required:
 - `git`
-- `ruby`
-- `rake`
+- `bash`
 - `zsh`
 
 Optional but supported:
@@ -90,18 +89,19 @@ If optional tools are installed, config and shims use them automatically.
 ## What Happens During Install
 
 `install.sh` does the following:
-- Verifies `git`, `ruby`, and `rake` are available.
+- Verifies `git` and `bash` are available.
 - Uses `DOTS_HOME`/`DOTS_DIR` (or defaults) and exports `HOME="$DOTS_HOME"`.
-- If the repo does not exist: clone with submodules, then run `rake`.
+- If the repo does not exist: clone with submodules, then run `./bin/dots-setup`.
 - If the repo exists and is clean: `git pull --ff-only --recurse-submodules`,
-  update submodules, then run `rake`.
+  update submodules, then run `./bin/dots-setup`.
 - If local changes exist: exit without overwriting anything.
 
-`rake` then performs dotfiles linking + configure scripts.
+`./bin/dots-setup` then performs dotfiles linking + configure scripts.
 
 ## Day-to-Day Usage
 
-- **Update your setup:** rerun the bootstrap command, or `cd "$DOTS_DIR" && rake`
+- **Update your setup:** rerun the bootstrap command, or
+  `cd "$DOTS_DIR" && ./bin/dots-setup`
   after pulling changes yourself.
 - **When updates fail:** if installer reports local changes, commit/stash/discard
   in `DOTS_DIR`, then rerun.
@@ -112,8 +112,8 @@ If optional tools are installed, config and shims use them automatically.
 
 - `rc/`: base dotfile sources (linked into `$HOME` as hidden files).
 - `rc-darwin/` and `rc-linux/`: OS-specific overlays.
-- `configure/`: post-link setup scripts used by `rake configure`.
-- `lib/` + `Rakefile`: orchestration for link/configure phases.
+- `configure/`: post-link setup scripts used by `./bin/dots-setup`.
+- `bin/dots-setup`: orchestration for link/configure phases.
 - `shims/`: shim runtime, generated launchers, and shim definitions.
 - `tmux/`: tmux assets/plugins used by this setup.
 - `zsh-plugins/`: bundled zsh plugin sources.

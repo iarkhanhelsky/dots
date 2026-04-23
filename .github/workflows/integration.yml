@@ -1,0 +1,78 @@
+name: Integration
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-script:
+    name: dots-setup integration (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run dots-setup with isolated DOTS_HOME
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_home="$(mktemp -d)"
+          DOTS_HOME="$test_home" ./bin/dots-setup
+
+          test -L "$test_home/.zshrc"
+          test -L "$test_home/.profile"
+          test -L "$test_home/.tmux.conf"
+          test -d "$test_home/.zshrc.d"
+
+  installer-update-path:
+    name: install.sh update path (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate install.sh update flow in isolated repo/home
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          workdir="$(pwd)"
+          tmp_root="$(mktemp -d)"
+          tmp_src="$tmp_root/src"
+          tmp_remote="$tmp_root/remote.git"
+          tmp_checkout="$tmp_root/checkout"
+          tmp_home="$tmp_root/home"
+          mkdir -p "$tmp_src" "$tmp_home"
+
+          # Seed a local source repo from current workspace without nested .git.
+          tar -cf - --exclude=.git -C "$workdir" . | tar -xf - -C "$tmp_src"
+          git -C "$tmp_src" init -b main
+          git -C "$tmp_src" add .
+          git -C "$tmp_src" commit -m "temp integration seed"
+
+          git init --bare "$tmp_remote"
+          git -C "$tmp_src" remote add origin "$tmp_remote"
+          git -C "$tmp_src" push -u origin main
+          git --git-dir="$tmp_remote" symbolic-ref HEAD refs/heads/main
+
+          git clone --recurse-submodules -b main "$tmp_remote" "$tmp_checkout"
+
+          DOTS_HOME="$tmp_home" DOTS_DIR="$tmp_checkout" "$workdir/install.sh"
+
+          test -L "$tmp_home/.zshrc"
+          test -L "$tmp_home/.profile"
+          test -L "$tmp_home/.tmux.conf"
