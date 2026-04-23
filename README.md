@@ -139,6 +139,7 @@ simple defaults for single-file edits and git commit messages.
 ## Repository Map
 
 - `rc/`: base dotfile sources (linked into `$HOME` as hidden files).
+- `rc/shared/`: shared assets linked once and consumed by multiple tools.
 - `rc-darwin/` and `rc-linux/`: OS-specific overlays.
 - `configure/`: post-link setup scripts used by `./bin/dots-setup`.
 - `bin/dots-setup`: orchestration for link/configure phases.
@@ -153,11 +154,13 @@ What this changes in practice:
 
 ## Optional AI Config
 
-This repo can also manage personal Claude config using the same linking model.
+This repo can also manage personal Claude/Cursor config using the same linking model.
 If you do not use it, you can safely ignore this section.
 
 - Personal agents: `rc/claude/agents/*.md` -> `~/.claude/agents/*.md`
-- Shared skills: `rc/claude/skills/*/SKILL.md` -> `~/.claude/skills/*/SKILL.md`
+- Shared skills source: `rc/shared/skills/*/SKILL.md` -> `~/.shared/skills/*/SKILL.md`
+- Claude skills link: `~/.claude/skills` -> `~/.shared/skills`
+- Cursor skills link: `~/.cursor/skills` -> `~/.shared/skills`
 
 ## Shims
 
