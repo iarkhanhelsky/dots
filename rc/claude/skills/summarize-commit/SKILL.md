@@ -1,8 +1,9 @@
 ---
-name: summarize-commit
+
+## name: summarize-commit
+
 description: Write a comprehensive change summary for commits and PRs, including rationale, solution approach, technical details, decisions, and validation steps.
 disable-model-invocation: true
----
 
 # Summarize Commit
 
@@ -64,6 +65,7 @@ We introduced an in-memory pass-through cache with a reasonable TTL so repeated 
 The cache is implemented as a small utility object store to keep behavior isolated and testable. The flag-request path now uses the cache in middleware before making external API calls.
 
 Critical decisions:
+
 - Chose in-memory cache over external cache for low complexity and fast rollout.
 - Used TTL-based refresh to balance freshness with rate-limit protection.
 - Limited scope to country-code lookups only.
@@ -91,24 +93,12 @@ flag_api_request country=DE cache=hit
 
 ## Output Template
 
-<rationale>
 ...
 
-<solution>
 ...
 
-<high_level_technical_details>
 ...
 
-<assumptions>
 ...
 
-<test_and_validation>
-commands:
-```sh
-...
-```
-relevant output (verbatim, shortened):
-```text
-...
-```
+commands: `sh ...`  relevant output (verbatim, shortened): `text ...` 
