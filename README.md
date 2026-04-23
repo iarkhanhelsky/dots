@@ -31,6 +31,7 @@ small "download-on-first-use" tool system, this is that repo.
 - [Prerequisites](#prerequisites)
 - [What Happens During Install](#what-happens-during-install)
 - [Day-to-Day Usage](#day-to-day-usage)
+- [Vim Quick Start](#vim-quick-start)
 - [Repository Map](#repository-map)
 - [Optional AI Config](#optional-ai-config)
 - [Shims](#shims)
@@ -107,6 +108,33 @@ If optional tools are installed, config and shims use them automatically.
   in `DOTS_DIR`, then rerun.
 - **Changing machines/environments:** reuse the same bootstrap command and set
   `DOTS_HOME`/`DOTS_DIR` if needed.
+
+## Vim Quick Start
+
+If you use Vim casually, this repo now includes [`rc/vimrc`](rc/vimrc) with
+simple defaults for single-file edits and git commit messages.
+
+- **Undo/redo**
+  - `u` undo
+  - `Ctrl-r` redo
+  - `:earlier 5m` / `:later 5m` for time-based undo travel
+- **Yank/paste**
+  - Native Vim still works (`yy`, `yw`, `p`, `P`)
+  - `<leader>y` copy to system clipboard (`<leader>` is `Space`)
+  - `<leader>p` / `<leader>P` paste from system clipboard
+  - Useful registers: `"` (default), `"0` (last yank), `"+` (system clipboard)
+- **Commit messages**
+  - In `git commit` buffers: spellcheck is enabled and wrapping is tuned for
+    the common 72-character body style.
+- **Optional plugins**
+  - `rc/vimrc` includes a commented `vim-plug` block with lightweight options:
+    `vim-sensible`, `vim-surround`, `vim-commentary`.
+  - Config works without plugins; uncomment only if you want them.
+- **A few commands that dramatically improve daily use**
+  - Navigation: `w` / `b` / `e` (word moves), `0` / `^` / `$` (line start/non-blank/end)
+  - Editing: `ciw` (change word), `di(` (delete inside parentheses), `da"` (delete around quotes)
+  - Search: `/text` then `n` / `N` for next/previous match
+  - Buffers: `:e file` open file, `:bnext` and `:bprev` switch between open buffers
 
 ## Repository Map
 

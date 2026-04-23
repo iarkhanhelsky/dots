@@ -1,0 +1,93 @@
+" Minimal daily-use Vim config (single-file edits + git commit messages)
+
+set nocompatible
+filetype plugin indent on
+syntax on
+
+" --- Core editing ergonomics ---
+set number
+set relativenumber
+set mouse=a
+set hidden
+set scrolloff=4
+set signcolumn=yes
+
+" Search: case-insensitive unless uppercase is used
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+
+" Indentation: conservative defaults for mixed prose/code editing
+set expandtab
+set shiftwidth=2
+set tabstop=2
+set softtabstop=2
+set smartindent
+
+" Keep swap/backup behavior simple in casual editing sessions
+set noswapfile
+set nobackup
+set nowritebackup
+
+" --- Persistent undo ---
+" Undo survives file close/reopen in ~/.cache/vim/undo
+if has('persistent_undo')
+  set undofile
+  let s:undo_dir = expand('~/.cache/vim/undo')
+  if !isdirectory(s:undo_dir)
+    call mkdir(s:undo_dir, 'p', 0700)
+  endif
+  let &undodir = s:undo_dir
+endif
+
+" --- Clipboard behavior ---
+" Prefer system clipboard when available.
+if has('unnamedplus')
+  set clipboard=unnamedplus
+elseif has('clipboard')
+  set clipboard=unnamed
+endif
+
+" --- Leader and quality-of-life mappings ---
+let mapleader = ' '
+
+nnoremap <leader>w :write<CR>
+nnoremap <leader>q :quit<CR>
+nnoremap <leader>x :x<CR>
+nnoremap <leader>h :nohlsearch<CR>
+
+" Clipboard-focused mappings (default yy/yw/p/P still work as usual):
+"   "+y / "+p uses the system clipboard register directly.
+"   "0 holds last yanked text (not deleted text).
+nnoremap <leader>y "+y
+vnoremap <leader>y "+y
+nnoremap <leader>p "+p
+nnoremap <leader>P "+P
+vnoremap <leader>p "+p
+
+" --- Git commit messages ---
+augroup dm_gitcommit
+  autocmd!
+  autocmd FileType gitcommit setlocal spell textwidth=72 colorcolumn=73
+  autocmd FileType gitcommit setlocal formatoptions+=t
+augroup END
+
+" --- Optional light plugins via vim-plug ---
+" Install vim-plug:
+"   curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+"     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+"
+" Uncomment if you want plugin loading:
+" if filereadable(expand('~/.vim/autoload/plug.vim'))
+"   call plug#begin('~/.vim/plugged')
+"   Plug 'tpope/vim-sensible'
+"   Plug 'tpope/vim-surround'
+"   Plug 'tpope/vim-commentary'
+"   call plug#end()
+" endif
+
+" Notes:
+"   u        -> undo
+"   <C-r>    -> redo
+"   :earlier 5m / :later 5m for time-based undo navigation
