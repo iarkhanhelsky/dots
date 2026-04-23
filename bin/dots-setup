@@ -73,20 +73,21 @@ link_entry() {
 }
 
 link_rc() {
-  local folder rc_root
-  local -a folders
-  mapfile -t folders < <(select_folders "rc")
-  log " :: Using ${#folders[@]} rc folders:"
-  printf '   - %s\n' "${folders[@]}"
+  local folder rc_root folders_output folder_count
+  folders_output="$(select_folders "rc")"
+  folder_count="$(printf '%s\n' "$folders_output" | awk 'NF {c++} END {print c+0}')"
+  log " :: Using ${folder_count} rc folders:"
+  printf '%s\n' "$folders_output" | sed 's/^/   - /'
 
-  for folder in "${folders[@]}"; do
+  while IFS= read -r folder; do
+    [ -n "$folder" ] || continue
     rc_root="${REPO_ROOT}/${folder}"
     [ -d "$rc_root" ] || continue
     while IFS= read -r entry; do
       [ -e "$entry" ] || continue
       link_entry "$entry" "$rc_root"
     done < <(sorted_entries "$rc_root")
-  done
+  done < <(printf '%s\n' "$folders_output")
 }
 
 link_zsh_plugins() {
@@ -99,31 +100,36 @@ link_zsh_plugins() {
     # "source_name:target_name"
   )
 
-  for entry in "${plugin_links[@]}"; do
-    src="${entry%%:*}"
-    dst="${entry##*:}"
-    ln -snf "${REPO_ROOT}/zsh-plugins/${src}" "${plugins_dir}/${dst}"
-  done
+  if [ "${#plugin_links[@]}" -gt 0 ]; then
+    for entry in "${plugin_links[@]}"; do
+      src="${entry%%:*}"
+      dst="${entry##*:}"
+      ln -snf "${REPO_ROOT}/zsh-plugins/${src}" "${plugins_dir}/${dst}"
+    done
+  fi
 }
 
 configure() {
-  local folder cfg_root script
-  local -a folders scripts
-  mapfile -t folders < <(select_folders "configure")
-  log " :: Using ${#folders[@]} configure folders:"
-  printf '   - %s\n' "${folders[@]}"
+  local folder cfg_root script folders_output folder_count
+  folders_output="$(select_folders "configure")"
+  folder_count="$(printf '%s\n' "$folders_output" | awk 'NF {c++} END {print c+0}')"
+  log " :: Using ${folder_count} configure folders:"
+  printf '%s\n' "$folders_output" | sed 's/^/   - /'
 
-  for folder in "${folders[@]}"; do
+  while IFS= read -r folder; do
+    [ -n "$folder" ] || continue
     cfg_root="${REPO_ROOT}/${folder}"
     [ -d "$cfg_root" ] || continue
-    shopt -s nullglob
-    mapfile -t scripts < <(printf '%s\n' "${cfg_root}"/*.sh | sort)
-    shopt -u nullglob
-    for script in "${scripts[@]}"; do
-      log "Apply ${script}"
-      "$script"
-    done
-  done
+    while IFS= read -r script; do
+      [ -f "$script" ] || continue
+      case "$script" in
+        *.sh)
+          log "Apply ${script}"
+          "$script"
+          ;;
+      esac
+    done < <(sorted_entries "$cfg_root")
+  done < <(printf '%s\n' "$folders_output")
 }
 
 main() {

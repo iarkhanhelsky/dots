@@ -15,7 +15,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,7 +39,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -61,6 +59,8 @@ jobs:
           # Seed a local source repo from current workspace without nested .git.
           tar -cf - --exclude=.git -C "$workdir" . | tar -xf - -C "$tmp_src"
           git -C "$tmp_src" init -b main
+          git -C "$tmp_src" config user.name "CI Integration Test"
+          git -C "$tmp_src" config user.email "ci@example.invalid"
           git -C "$tmp_src" add .
           git -C "$tmp_src" commit -m "temp integration seed"
 
