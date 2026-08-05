@@ -161,7 +161,21 @@ download_tool() {
         echo "TOOL_FILE not found in tar.gz: ${file_path}" >&2
         exit 1
       fi
-      mv "${tmp_dir}/${file_path}" "${target_binary}"
+      if [[ -n "${RESOLVED_TOOL_ROOT:-}" ]]; then
+        local root_path
+        root_path="$(expand_template "${RESOLVED_TOOL_ROOT}")"
+        if [[ ! -d "${tmp_dir}/${root_path}" ]]; then
+          echo "TOOL_ROOT not found in tar.gz: ${root_path}" >&2
+          exit 1
+        fi
+        cp -R "${tmp_dir}/${root_path}/." "${cache_dir}/"
+        if [[ ! -f "${target_binary}" ]]; then
+          echo "TOOL_FILE must resolve to ${root_path}/${tool} when TOOL_ROOT is set." >&2
+          exit 1
+        fi
+      else
+        mv "${tmp_dir}/${file_path}" "${target_binary}"
+      fi
       ;;
     zip)
       require_cmd unzip
@@ -198,6 +212,7 @@ resolve_binary() {
   RESOLVED_TOOL_URL="$(platform_var_value "TOOL_URL")"
   RESOLVED_TOOL_MODE="$(platform_var_value "TOOL_MODE")"
   RESOLVED_TOOL_FILE="$(platform_var_value "TOOL_FILE")"
+  RESOLVED_TOOL_ROOT="$(platform_var_value "TOOL_ROOT")"
 
   if [[ -z "${RESOLVED_TOOL_VERSION}" || -z "${RESOLVED_TOOL_URL}" ]]; then
     echo "Definition ${definition_path} must define TOOL_VERSION and TOOL_URL." >&2

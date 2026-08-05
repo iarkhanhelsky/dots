@@ -195,6 +195,7 @@ Notes:
   - `TOOL_MODE` (`auto`, `binary`, `tar.gz`, `zip`)
   - `TOOL_URL_DARWIN_ARM64`, `TOOL_URL_LINUX_AMD64`
   - `TOOL_FILE_DARWIN_ARM64`, `TOOL_MODE_LINUX_AMD64`
+  - `TOOL_ROOT` to preserve a tar archive directory alongside the executable
 
 3. Commit:
 - `shims/bin/<tool-name>`
